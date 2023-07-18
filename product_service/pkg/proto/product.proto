@@ -1,0 +1,73 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service ProductService {
+    rpc ListAllProduct (ListAllProductRequest) returns (ListAllProductResponse){}
+    rpc AddProduct (AddProductRequest) returns (AddProductResponse){}
+    rpc ListProductDetails (ListProductDetailsRequest) returns (ListProductDetailResponse){}
+    rpc AddProductDetails (AddProdDetailRequest) returns (AddProductResponse){}
+}
+
+message ListAllProductRequest {
+    int32 Page=1;
+    int32 limit=2;
+}
+
+message Product {
+    uint32 ID=2;
+    string Image=3;
+    string ModelName=4;
+    string CategoryName=5;
+    string BrandName=6;
+}
+
+message ListAllProductResponse{
+    int32 status=1;
+    repeated Product product=2;
+}
+
+message AddProductRequest {
+    string ModelName=1;
+	string Image=2;
+	uint32 BrandID=3;
+	uint32 CategoryID=4;
+}
+
+message AddProductResponse {
+    int32 status=1;
+    string reponse =2;
+}
+
+message ListProductDetailsRequest {
+    int32 Page=1;
+    int32 limit=2;
+    string productid=3;
+}
+
+message ProdDetail {
+    string Image=2;
+	string ModelName=3;
+	uint32   Price=4;
+	string BrandName=5;
+	uint32   Stock=6;
+	uint32   Percentage=7;
+    string Colour=8;
+	string Size=9;
+}
+
+message ListProductDetailResponse {
+    int32 status=1;
+    repeated ProdDetail productDetail=2;
+}
+
+message AddProdDetailRequest {
+    uint32 Price=1;
+	uint32 Stock=2;
+	uint32 AvailableSizeID=3;
+	uint32 AvailableColourID=4;
+	uint32 ProductID=5;
+    uint32 DiscountID=6;
+}
