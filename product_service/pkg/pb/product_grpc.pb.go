@@ -26,6 +26,9 @@ type ProductServiceClient interface {
 	AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*AddProductResponse, error)
 	ListProductDetails(ctx context.Context, in *ListProductDetailsRequest, opts ...grpc.CallOption) (*ListProductDetailResponse, error)
 	AddProductDetails(ctx context.Context, in *AddProdDetailRequest, opts ...grpc.CallOption) (*AddProductResponse, error)
+	CartProductDetails(ctx context.Context, in *CartProdDetailRequest, opts ...grpc.CallOption) (*CartProdDetailResponse, error)
+	ProductDetail(ctx context.Context, in *CartProdDetailRequest, opts ...grpc.CallOption) (*ProductDetailResponse, error)
+	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockResponse, error)
 }
 
 type productServiceClient struct {
@@ -72,6 +75,33 @@ func (c *productServiceClient) AddProductDetails(ctx context.Context, in *AddPro
 	return out, nil
 }
 
+func (c *productServiceClient) CartProductDetails(ctx context.Context, in *CartProdDetailRequest, opts ...grpc.CallOption) (*CartProdDetailResponse, error) {
+	out := new(CartProdDetailResponse)
+	err := c.cc.Invoke(ctx, "/pb.ProductService/CartProductDetails", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *productServiceClient) ProductDetail(ctx context.Context, in *CartProdDetailRequest, opts ...grpc.CallOption) (*ProductDetailResponse, error) {
+	out := new(ProductDetailResponse)
+	err := c.cc.Invoke(ctx, "/pb.ProductService/ProductDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *productServiceClient) UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockResponse, error) {
+	out := new(UpdateStockResponse)
+	err := c.cc.Invoke(ctx, "/pb.ProductService/UpdateStock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProductServiceServer is the server API for ProductService service.
 // All implementations must embed UnimplementedProductServiceServer
 // for forward compatibility
@@ -80,6 +110,9 @@ type ProductServiceServer interface {
 	AddProduct(context.Context, *AddProductRequest) (*AddProductResponse, error)
 	ListProductDetails(context.Context, *ListProductDetailsRequest) (*ListProductDetailResponse, error)
 	AddProductDetails(context.Context, *AddProdDetailRequest) (*AddProductResponse, error)
+	CartProductDetails(context.Context, *CartProdDetailRequest) (*CartProdDetailResponse, error)
+	ProductDetail(context.Context, *CartProdDetailRequest) (*ProductDetailResponse, error)
+	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockResponse, error)
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -98,6 +131,15 @@ func (UnimplementedProductServiceServer) ListProductDetails(context.Context, *Li
 }
 func (UnimplementedProductServiceServer) AddProductDetails(context.Context, *AddProdDetailRequest) (*AddProductResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddProductDetails not implemented")
+}
+func (UnimplementedProductServiceServer) CartProductDetails(context.Context, *CartProdDetailRequest) (*CartProdDetailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CartProductDetails not implemented")
+}
+func (UnimplementedProductServiceServer) ProductDetail(context.Context, *CartProdDetailRequest) (*ProductDetailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProductDetail not implemented")
+}
+func (UnimplementedProductServiceServer) UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 
@@ -184,6 +226,60 @@ func _ProductService_AddProductDetails_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_CartProductDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CartProdDetailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).CartProductDetails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ProductService/CartProductDetails",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).CartProductDetails(ctx, req.(*CartProdDetailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProductService_ProductDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CartProdDetailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).ProductDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ProductService/ProductDetail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).ProductDetail(ctx, req.(*CartProdDetailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProductService_UpdateStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).UpdateStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ProductService/UpdateStock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).UpdateStock(ctx, req.(*UpdateStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +302,18 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddProductDetails",
 			Handler:    _ProductService_AddProductDetails_Handler,
+		},
+		{
+			MethodName: "CartProductDetails",
+			Handler:    _ProductService_CartProductDetails_Handler,
+		},
+		{
+			MethodName: "ProductDetail",
+			Handler:    _ProductService_ProductDetail_Handler,
+		},
+		{
+			MethodName: "UpdateStock",
+			Handler:    _ProductService_UpdateStock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

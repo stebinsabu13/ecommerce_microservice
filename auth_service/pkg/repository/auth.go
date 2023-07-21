@@ -22,24 +22,13 @@ func NewauthRepo(db *gorm.DB) interfaces.AuthRepo {
 	}
 }
 
-func (c *authRepo) UserSignup(ctx context.Context, req *pb.RegisterRequest) error {
+func (c *authRepo) UserSignup(ctx context.Context, req *pb.RegisterRequest) (uint, error) {
 	var userid uint
-	// tx := c.DB.Begin()
 	query1 := `insert into users(created_at,updated_at,first_name,last_name,email,mobile_num,password,referal_code)values($1,$2,$3,$4,$5,$6,$7,$8) returning id`
 	if err := c.DB.Raw(query1, time.Now(), time.Now(), req.FirstName, req.LastName, req.Email, req.Phone, req.Password, req.Referalcode).Scan(&userid).Error; err != nil {
-		// tx.Rollback()
-		return err
+		return userid, err
 	}
-	// query := `insert into carts(user_id)values($1)`
-	// if err := tx.Exec(query, userid).Error; err != nil {
-	// 	tx.Rollback()
-	// 	return err
-	// }
-	// if err := tx.Commit().Error; err != nil {
-	// 	tx.Rollback()
-	// 	return err
-	// }
-	return nil
+	return userid, nil
 }
 
 func (c *authRepo) SaveOtp(ctx context.Context, otpsession domain.OtpSession) error {
@@ -67,7 +56,6 @@ func (c *authRepo) FindbyEmail(ctx context.Context, email string) (utils.Respons
 	var user utils.ResponseUsers
 	query := `SELECT * from users where email=$1`
 	c.DB.Raw(query, email).Scan(&user)
-	// _ = c.DB.Where("email=?", email).Find(&user)
 	if user.ID == 0 {
 		return user, errors.New("invalid email")
 	}
@@ -96,4 +84,30 @@ func (c *authRepo) SignUpAdmin(ctx context.Context, admin domain.Admin) error {
 		return err
 	}
 	return nil
+}
+
+func (c *authRepo) AddAddress(ctx context.Context, address domain.Address) error {
+	err := c.DB.Create(&address).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *authRepo) ShowAddress(ctx context.Context, id uint) ([]*pb.UserAddress, error) {
+	var address []*pb.UserAddress
+	query := `select id,house_name,street,city,state,country,pincode from addresses where user_id=?`
+	if err := c.DB.Raw(query, id).Scan(&address).Error; err != nil {
+		return address, err
+	}
+	return address, nil
+}
+
+func (c *authRepo) Getaddress(addresid uint) ([]*pb.UserAddress, error) {
+	var address []*pb.UserAddress
+	query := `select id,house_name,street,city,state,country,pincode from addresses where id=?`
+	if err := c.DB.Raw(query, addresid).Scan(&address).Error; err != nil {
+		return address, err
+	}
+	return address, nil
 }

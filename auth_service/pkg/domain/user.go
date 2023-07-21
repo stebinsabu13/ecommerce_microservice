@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	ID          uint      `json:"id" gorm:"primarykey;auto_increment"`
@@ -14,4 +18,15 @@ type User struct {
 	Block       bool      `json:"block" gorm:"default:false"`
 	Verified    bool      `json:"verified" gorm:"default:false"`
 	ReferalCode string    `json:"referalcode" gorm:"uniqueIndex"`
+}
+
+type Address struct {
+	gorm.Model
+	HouseName string `json:"housename" gorm:"not null"`
+	Street    string `json:"street" gorm:"not null"`
+	City      string `json:"city" gorm:"not null"`
+	State     string `json:"state" gorm:"not null"`
+	Country   string `json:"country" gorm:"not null"`
+	Pincode   string `json:"pincode" gorm:"not null"`
+	UserID    uint   `json:"userid"`
 }

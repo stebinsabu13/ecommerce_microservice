@@ -28,6 +28,9 @@ type AuthServiceClient interface {
 	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
 	AdminRegister(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*OtpVerifyResponse, error)
 	AdminLogin(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	AddUserAddress(ctx context.Context, in *AddUserAddressRequest, opts ...grpc.CallOption) (*AddUserAddressResponse, error)
+	ShowUserAddress(ctx context.Context, in *ShowUserAddressRequest, opts ...grpc.CallOption) (*ShowUserAddressResponse, error)
+	GetAddress(ctx context.Context, in *GetAddressRequest, opts ...grpc.CallOption) (*ShowUserAddressResponse, error)
 }
 
 type authServiceClient struct {
@@ -92,6 +95,33 @@ func (c *authServiceClient) AdminLogin(ctx context.Context, in *LoginRequest, op
 	return out, nil
 }
 
+func (c *authServiceClient) AddUserAddress(ctx context.Context, in *AddUserAddressRequest, opts ...grpc.CallOption) (*AddUserAddressResponse, error) {
+	out := new(AddUserAddressResponse)
+	err := c.cc.Invoke(ctx, "/pb.AuthService/AddUserAddress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) ShowUserAddress(ctx context.Context, in *ShowUserAddressRequest, opts ...grpc.CallOption) (*ShowUserAddressResponse, error) {
+	out := new(ShowUserAddressResponse)
+	err := c.cc.Invoke(ctx, "/pb.AuthService/ShowUserAddress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetAddress(ctx context.Context, in *GetAddressRequest, opts ...grpc.CallOption) (*ShowUserAddressResponse, error) {
+	out := new(ShowUserAddressResponse)
+	err := c.cc.Invoke(ctx, "/pb.AuthService/GetAddress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -102,6 +132,9 @@ type AuthServiceServer interface {
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 	AdminRegister(context.Context, *RegisterRequest) (*OtpVerifyResponse, error)
 	AdminLogin(context.Context, *LoginRequest) (*LoginResponse, error)
+	AddUserAddress(context.Context, *AddUserAddressRequest) (*AddUserAddressResponse, error)
+	ShowUserAddress(context.Context, *ShowUserAddressRequest) (*ShowUserAddressResponse, error)
+	GetAddress(context.Context, *GetAddressRequest) (*ShowUserAddressResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -126,6 +159,15 @@ func (UnimplementedAuthServiceServer) AdminRegister(context.Context, *RegisterRe
 }
 func (UnimplementedAuthServiceServer) AdminLogin(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AdminLogin not implemented")
+}
+func (UnimplementedAuthServiceServer) AddUserAddress(context.Context, *AddUserAddressRequest) (*AddUserAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUserAddress not implemented")
+}
+func (UnimplementedAuthServiceServer) ShowUserAddress(context.Context, *ShowUserAddressRequest) (*ShowUserAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ShowUserAddress not implemented")
+}
+func (UnimplementedAuthServiceServer) GetAddress(context.Context, *GetAddressRequest) (*ShowUserAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAddress not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -248,6 +290,60 @@ func _AuthService_AdminLogin_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_AddUserAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddUserAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AddUserAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.AuthService/AddUserAddress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AddUserAddress(ctx, req.(*AddUserAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_ShowUserAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShowUserAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ShowUserAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.AuthService/ShowUserAddress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ShowUserAddress(ctx, req.(*ShowUserAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.AuthService/GetAddress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetAddress(ctx, req.(*GetAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +374,18 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminLogin",
 			Handler:    _AuthService_AdminLogin_Handler,
+		},
+		{
+			MethodName: "AddUserAddress",
+			Handler:    _AuthService_AddUserAddress_Handler,
+		},
+		{
+			MethodName: "ShowUserAddress",
+			Handler:    _AuthService_ShowUserAddress_Handler,
+		},
+		{
+			MethodName: "GetAddress",
+			Handler:    _AuthService_GetAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

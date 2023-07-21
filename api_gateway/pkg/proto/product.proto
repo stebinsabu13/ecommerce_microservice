@@ -48,14 +48,14 @@ message ListProductDetailsRequest {
 }
 
 message ProdDetail {
-    string Image=2;
-	string ModelName=3;
-	uint32   Price=4;
-	string BrandName=5;
-	uint32   Stock=6;
-	uint32   Percentage=7;
-    string Colour=8;
-	string Size=9;
+    string Image=1;
+	string ModelName=2;
+	uint32   Price=3;
+	string BrandName=4;
+	uint32   Stock=5;
+	uint32   Percentage=6;
+    string Colour=7;
+	string Size=8;
 }
 
 message ListProductDetailResponse {

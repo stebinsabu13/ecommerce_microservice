@@ -1,0 +1,17 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service CartService {
+    rpc CreateCart (CreateCartRequest) returns (CreateCartResponse){}
+}
+
+message CreateCartRequest {
+    int32 userid=1;
+}
+
+message CreateCartResponse {
+    int32 status=1;
+}

@@ -11,6 +11,8 @@ service AuthService {
     rpc Validate (ValidateRequest) returns (ValidateResponse){}
     rpc AdminRegister (RegisterRequest) returns (OtpVerifyResponse){}
     rpc AdminLogin (LoginRequest) returns (LoginResponse){}
+    rpc AddUserAddress (AddUserAddressRequest) returns (AddUserAddressResponse){}
+    rpc ShowUserAddress (ShowUserAddressRequest) returns (ShowUserAddressResponse){}
 }
 
 //Register
@@ -76,4 +78,38 @@ message ValidateResponse {
     int64 status = 1;
     string error = 2;
     int64 userId = 3;
+}
+
+message AddUserAddressRequest {
+    uint32 userid=1;
+     string HouseName=2;
+    string Street=3;
+      string City=4;
+     string State=5;
+   string Country=6;
+   string Pincode=7;
+}
+
+message AddUserAddressResponse {
+    int32 status=1;
+    string Response=2;
+}
+
+message ShowUserAddressRequest {
+    uint32 userid=1;
+}
+
+message UserAddress {
+    uint32   ID=1;
+    string HouseName=2;
+    string Street=3;
+    string City=4;
+    string State=5;
+    string Country=6;
+    string Pincode=7;
+}
+
+message ShowUserAddressResponse {
+    int32 status=1;
+    repeated UserAddress Address=2;
 }

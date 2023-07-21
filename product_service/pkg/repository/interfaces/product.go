@@ -12,4 +12,7 @@ type ProductRepo interface {
 	FindProductById(context.Context, *pb.ListProductDetailsRequest) ([]*pb.ProdDetail, error)
 	AddProduct(ctx context.Context, product domain.Product) error
 	AddProductDetail(context.Context, domain.ProductDetails) error
+	CartProductDetail(context.Context, *pb.CartProdDetailRequest) (*pb.CartProdDetailResponse, error)
+	FindProductDetailById(id string) (domain.ProductDetails, int, error)
+	UpdateStock(*pb.UpdateStockRequest) error
 }

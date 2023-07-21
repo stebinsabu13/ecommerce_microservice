@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/stebinsabu13/ecommerce_microservice/product_service/pkg/domain"
 	"github.com/stebinsabu13/ecommerce_microservice/product_service/pkg/pb"
@@ -60,6 +61,57 @@ func (c *ProductDatabase) AddProductDetail(ctx context.Context, productdetail do
 	result := c.DB.Create(&productdetail).Error
 	if result != nil {
 		return result
+	}
+	return nil
+}
+
+func (c *ProductDatabase) CartProductDetail(ctx context.Context, req *pb.CartProdDetailRequest) (*pb.CartProdDetailResponse, error) {
+	var detail *pb.CartProdDetailResponse
+	query := `select p.model_name,p.image,b.brand_name,pd.stock,pd.price,c.colour,s.size,d.percentage from products p
+	left join brands b on b.id=p.brand_id
+	inner join product_details pd on pd.product_id=p.id
+	inner join available_colours c on c.id=pd.available_colour_id
+	inner join available_sizes s on s.id=pd.available_size_id
+	left join discounts d on d.id=pd.discount_id where pd.id=? and pd.deleted_at is null`
+	result := c.DB.Raw(query, req.Productdetailid).Scan(&detail)
+	if result.Error != nil {
+		return detail, errors.New("failed to get product")
+	}
+	return detail, nil
+}
+
+func (c *ProductDatabase) FindProductDetailById(id string) (domain.ProductDetails, int, error) {
+	var productdetail domain.ProductDetails
+	var discount int
+	if err := c.DB.Where("id=?", id).Find(&productdetail).Error; err != nil {
+		return productdetail, discount, err
+	}
+	if err := c.DB.Model(&domain.Discount{}).Where("id=?", productdetail.DiscountID).Select("percentage").Scan(&discount).Error; err != nil {
+		return productdetail, discount, err
+	}
+	return productdetail, discount, nil
+}
+
+func (c *ProductDatabase) UpdateStock(req *pb.UpdateStockRequest) error {
+	var stock uint
+	tx := c.DB.Begin()
+	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).Select("stock").Scan(&stock).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if int(stock-uint(req.Quantity)) < 0 {
+		tx.Rollback()
+		return errors.New("can't place orders out of stock product in the cart please remove and come again")
+	}
+	newstock := stock - uint(req.Quantity)
+	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).UpdateColumn("stock", newstock).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	fmt.Println("Inside update stock repo:", newstock)
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
 	}
 	return nil
 }

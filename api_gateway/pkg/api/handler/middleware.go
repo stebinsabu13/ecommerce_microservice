@@ -18,11 +18,11 @@ func (cr *AuthHandler) AuthorizationMiddleware(role string) gin.HandlerFunc {
 		res, err1 := cr.Client.AuthorizationMiddleware(tokenString)
 		if err1 != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "authorization failed" + err1.Error(),
+				"error": "authorization failed" + res.Error,
 			})
 			return
 		}
-		c.Set(role+"-id", res.UserId)
+		c.Set(role+"-id", uint(res.UserId))
 		c.Next()
 	}
 }

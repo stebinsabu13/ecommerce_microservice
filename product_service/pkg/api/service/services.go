@@ -83,3 +83,34 @@ func (cr *productService) ListProductDetails(ctx context.Context, req *pb.ListPr
 		ProductDetail: res,
 	}, nil
 }
+
+func (cr *productService) CartProductDetails(ctx context.Context, req *pb.CartProdDetailRequest) (*pb.CartProdDetailResponse, error) {
+	res, err := cr.Repo.CartProductDetail(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (cr *productService) ProductDetail(ctx context.Context, req *pb.CartProdDetailRequest) (*pb.ProductDetailResponse, error) {
+	prodetail, discount, err := cr.Repo.FindProductDetailById(req.Productdetailid)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ProductDetailResponse{
+		Id:       uint32(prodetail.ID),
+		Stock:    int32(prodetail.Stock),
+		Price:    uint32(prodetail.Price),
+		Discount: int32(discount),
+	}, nil
+}
+
+func (cr *productService) UpdateStock(ctx context.Context, req *pb.UpdateStockRequest) (*pb.UpdateStockResponse, error) {
+	err := cr.Repo.UpdateStock(req)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateStockResponse{
+		Response: "stock updated",
+	}, nil
+}

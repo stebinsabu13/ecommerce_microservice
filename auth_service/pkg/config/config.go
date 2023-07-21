@@ -9,6 +9,7 @@ type Config struct {
 	Db_password    string `mapstructure:"DB_PASSWORD"`
 	Db_name        string `mapstructure:"DB_NAME"`
 	Port           string `mapstructure:"PORT"`
+	Cart_service   string `mapstructure:"CART_SRV"`
 	Jwt_secret_key string `mapstructure:"JWT_SECRET_KEY"`
 	Auth_token     string `mapstructure:"AUTH_TOKEN"`
 	Account_sid    string `mapstructure:"ACCOUNT_SID"`
@@ -17,7 +18,7 @@ type Config struct {
 
 var envs = []string{"DB_PORT", "DB_HOST",
 	"DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", "JWT_SECRET_KEY",
-	"AUTH_TOKEN", "ACCOUNT_SID", "SERVICE_SID",
+	"AUTH_TOKEN", "ACCOUNT_SID", "SERVICE_SID", "CART_SRV",
 }
 
 var config *Config

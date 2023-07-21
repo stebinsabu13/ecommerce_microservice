@@ -13,10 +13,10 @@ type Server struct {
 }
 
 func NewServerHTTP(c *config.Config, authHandler handler.AuthHandler, productHandler handler.ProductHandler,
-) (*Server, error) {
+	cartHandler handler.CartHandler, orderHandler handler.OrderHandler) (*Server, error) {
 	engine := gin.New()
 	engine.Use(gin.Logger())
-	routes.RegisterUserRoutes(engine.Group("/"), authHandler, productHandler)
+	routes.RegisterUserRoutes(engine.Group("/"), authHandler, productHandler, cartHandler, orderHandler)
 	routes.RegisterAdminRoutes(engine.Group("/"), authHandler, productHandler)
 	return &Server{
 		Engine: engine,
@@ -25,5 +25,6 @@ func NewServerHTTP(c *config.Config, authHandler handler.AuthHandler, productHan
 }
 
 func (c *Server) Start() {
+	c.Engine.LoadHTMLGlob("static/*.html")
 	c.Engine.Run(c.Port)
 }

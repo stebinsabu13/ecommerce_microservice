@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
+	client "github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/client/interfaces"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/domain"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/pb"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/repository/interfaces"
@@ -12,13 +14,15 @@ import (
 )
 
 type authService struct {
-	Repo interfaces.AuthRepo
+	Repo   interfaces.AuthRepo
+	Client client.CartClient
 	pb.UnimplementedAuthServiceServer
 }
 
-func NewauthUseCase(repo interfaces.AuthRepo) pb.AuthServiceServer {
+func NewauthUseCase(repo interfaces.AuthRepo, client client.CartClient) pb.AuthServiceServer {
 	return &authService{
-		Repo: repo,
+		Repo:   repo,
+		Client: client,
 	}
 }
 
@@ -37,10 +41,16 @@ func (cr *authService) Register(ctx context.Context, req *pb.RegisterRequest) (*
 	}
 	req.Password = hash
 	req.Referalcode = referalcode
-	if err := cr.Repo.UserSignup(context.Background(), req); err != nil {
+	userid, err2 := cr.Repo.UserSignup(context.Background(), req)
+	if err2 != nil {
 		return &pb.RegisterResponse{
 			Status: http.StatusInternalServerError,
-		}, err
+		}, err2
+	}
+	if err := cr.Client.CreateCart(userid); err != nil {
+		return &pb.RegisterResponse{
+			Status: http.StatusBadGateway,
+		}, errors.New("failed to create cart")
 	}
 	respSid, err1 := cr.TwilioSendOTP(ctx, req.Phone)
 	if err1 != nil {
@@ -117,7 +127,7 @@ func (cr *authService) Validate(ctx context.Context, req *pb.ValidateRequest) (*
 		return &pb.ValidateResponse{
 			Status: http.StatusBadRequest,
 			Error:  err.Error(),
-		}, nil
+		}, err
 	}
 
 	return &pb.ValidateResponse{
@@ -186,5 +196,48 @@ func (cr *authService) AdminLogin(ctx context.Context, req *pb.LoginRequest) (*p
 		Status: http.StatusOK,
 		User:   data,
 		Token:  tokenString,
+	}, nil
+}
+
+func (cr *authService) AddUserAddress(ctx context.Context, req *pb.AddUserAddressRequest) (*pb.AddUserAddressResponse, error) {
+	address := domain.Address{
+		HouseName: req.HouseName,
+		Street:    req.Street,
+		City:      req.City,
+		State:     req.State,
+		Country:   req.Country,
+		Pincode:   req.Pincode,
+		UserID:    uint(req.Userid),
+	}
+	fmt.Println(address)
+	if err := cr.Repo.AddAddress(ctx, address); err != nil {
+		return nil, err
+	}
+	return &pb.AddUserAddressResponse{
+		Status:   http.StatusOK,
+		Response: "Address addedd",
+	}, nil
+}
+
+func (cr *authService) ShowUserAddress(ctx context.Context, req *pb.ShowUserAddressRequest) (*pb.ShowUserAddressResponse, error) {
+	res, err := cr.Repo.ShowAddress(ctx, uint(req.Userid))
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ShowUserAddressResponse{
+		Status:  http.StatusOK,
+		Address: res,
+	}, nil
+}
+
+func (cr *authService) GetAddress(ctx context.Context, req *pb.GetAddressRequest) (*pb.ShowUserAddressResponse, error) {
+	fmt.Println("inside service")
+	res, err := cr.Repo.Getaddress(uint(req.Addressid))
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ShowUserAddressResponse{
+		Status:  http.StatusOK,
+		Address: res,
 	}, nil
 }

@@ -16,7 +16,7 @@ func Initdb(cfg *config.Config) (*gorm.DB, error) {
 	if dbErr != nil {
 		log.Fatalln(dbErr)
 	}
-	db.AutoMigrate(&domain.User{}, &domain.OtpSession{}, &domain.Admin{})
+	db.AutoMigrate(&domain.User{}, &domain.OtpSession{}, &domain.Admin{}, &domain.Address{})
 
 	return db, dbErr
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -132,5 +133,53 @@ func (cr *AuthHandler) AdminLogout(c *gin.Context) {
 	c.SetCookie("admin-token", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"Logout": "Success",
+	})
+}
+
+func (cr *AuthHandler) ShowAllAddress(c *gin.Context) {
+	id, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Not ok",
+		})
+		return
+	}
+	addresses, err := cr.Client.ShowAddress(c.Request.Context(), id.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"addresses": addresses,
+	})
+}
+
+func (cr *AuthHandler) AddAddress(c *gin.Context) {
+	var body utils.AddAddress
+	id, ok := c.Get("user-id")
+	fmt.Println("inside handler", id)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Not ok",
+		})
+		return
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	res, err := cr.Client.AddAddress(c.Request.Context(), body, id.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(int(res.Status), gin.H{
+		"Success": res.Response,
 	})
 }

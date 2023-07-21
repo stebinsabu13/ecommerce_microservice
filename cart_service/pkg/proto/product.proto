@@ -1,0 +1,33 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service ProductService {
+    rpc CartProductDetails (CartProdDetailRequest) returns (CartProdDetailResponse){}
+    rpc ProductDetail (CartProdDetailRequest) returns (ProductDetailResponse){}
+}
+
+message CartProdDetailRequest {
+    string productdetailid=1;
+}
+
+message CartProdDetailResponse {
+    string Image=1;
+      string ModelName=2;
+      uint32   Price=3;
+	  string BrandName=4;
+       string Size=5;
+     string Colour=6;
+     int32    Percentage=7;
+}
+
+message ProductDetailResponse {
+    uint32 id=1;
+    int32 stock=2;
+    uint32 price=3;
+    int32 discount=4;
+    uint32 productid=5;
+}
+

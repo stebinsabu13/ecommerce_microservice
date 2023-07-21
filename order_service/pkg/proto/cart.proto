@@ -1,0 +1,39 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service CartService {
+    rpc FindCart (CartRequest) returns (CartResponse){}
+    rpc CartItems (CartItemRequest) returns (CartItemResponse){}
+    rpc UpdateCart (CartResponse) returns (UpdateResponse){}
+    rpc DeleteCart (CartItemRequest) returns (UpdateResponse){}
+}
+
+message CartRequest {
+    uint32 userid=1;
+}
+
+message CartResponse {
+    uint32 id=1;
+    uint32 userid=2;
+    int32 grandtotal=3;
+}
+
+message CartItemRequest {
+    uint32 cartid=1;
+}
+message CartItem {
+    uint32 CartID=1;
+    uint32 ProductDetailID=2;
+    uint32 quantity=3;
+}
+
+message CartItemResponse {
+    repeated CartItem items=1;
+}
+
+message UpdateResponse {
+    int32 grandtotal=1;
+}

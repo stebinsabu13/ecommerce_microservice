@@ -1,0 +1,30 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service ProductService {
+    rpc OrderProductDetail (OrderProdDetailRequest) returns (ProductDetailResponse){}
+    rpc UpdateStock (UpdateStockRequest) returns (UpdateStockResponse){}
+}
+
+message OrderProdDetailRequest {
+    uint32 productdetailid=1;
+}
+
+message ProductDetailResponse {
+    uint32 id=1;
+    int32 stock=2;
+    uint32 price=3;
+    int32 discount=4;
+    uint32 productid=5;
+}
+
+message UpdateStockRequest {
+    uint32 prodetailid=1;
+    uint32 quantity=2;
+}
+message UpdateStockResponse {
+    string Response=1;
+}

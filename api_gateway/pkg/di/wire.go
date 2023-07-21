@@ -14,8 +14,8 @@ import (
 
 func InitializeAPI(c *config.Config) (*api.Server, error) {
 	wire.Build(service.InitClient,
-		client.NewauthClient, client.NewProductClient,
-		handler.NewUserHandler, handler.NewProductHandler,
+		client.NewauthClient, client.NewProductClient, client.NewCartClient, client.NewOrderClient,
+		handler.NewUserHandler, handler.NewProductHandler, handler.NewCartHandler, handler.NewOrderHandler,
 		api.NewServerHTTP)
 	return &api.Server{}, nil
 }

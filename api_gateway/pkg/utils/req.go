@@ -42,3 +42,12 @@ type Pagination struct {
 	Offset uint `json:"offset"`
 	Limit  uint `json:"limit"`
 }
+
+type AddAddress struct {
+	HouseName string `json:"housename" binding:"required"`
+	Street    string `json:"street" binding:"required"`
+	City      string `json:"city" binding:"required" `
+	State     string `json:"state" binding:"required" `
+	Country   string `json:"country" binding:"required"`
+	Pincode   string `json:"pincode" binding:"required" `
+}

@@ -1,0 +1,83 @@
+syntax= "proto3";
+
+package pb;
+
+option go_package = "./pkg/pb";
+
+service CartService {
+    rpc ViewCart (ViewCartRequest) returns (ViewCartResponse){}
+    rpc AddtoCart (AddCartRequest) returns (AddCartResponse){}
+    rpc CreateCart (CreateCartRequest) returns (CreateCartResponse){}
+    rpc FindCart (CartRequest) returns (CartResponse){}
+    rpc CartItems (CartItemRequest) returns (CartItemResponse){}
+    rpc UpdateCart (CartResponse) returns (UpdateResponse){}
+    rpc DeleteCart (CartItemRequest) returns (UpdateResponse){}
+}
+
+message CreateCartRequest {
+    int32 userid=1;
+}
+
+message CreateCartResponse {
+    int32 status=1;
+}
+
+message ViewCartRequest {
+    int32 userid=1;
+}
+
+message CartItems {
+    string ProductDetailID=1;
+      string Image=2;
+      string ModelName=3;
+      uint32   Price=4;
+       string Size=5;
+     string Colour=6;
+     string BrandName=7;
+   uint32   Quantity=8;
+     int32    Percentage=9;
+      uint32   Total=10;
+}
+
+message ViewCartResponse {
+    int32 status=1;
+    int32 Grandtotal=2;
+    repeated CartItems items=3;
+}
+
+message AddCartRequest {
+    string productid=1;
+    uint32 userid=2;
+}
+
+message AddCartResponse {
+    int32 status=1;
+    string response=2;
+}
+
+message CartRequest {
+    uint32 userid=1;
+}
+
+message CartResponse {
+    uint32 id=1;
+    uint32 userid=2;
+    int32 grandtotal=3;
+}
+
+message CartItemRequest {
+    uint32 cartid=1;
+}
+message CartItem {
+    uint32 CartID=1;
+    uint32 ProductDetailID=2;
+    uint32 quantity=3;
+}
+
+message CartItemResponse {
+    repeated CartItem items=1;
+}
+
+message UpdateResponse {
+    int32 grandtotal=1;
+}

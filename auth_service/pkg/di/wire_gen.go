@@ -9,6 +9,7 @@ package di
 import (
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/api"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/api/service"
+	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/client"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/config"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/db"
 	"github.com/stebinsabu13/ecommerce_microservice/auth_service/pkg/repository"
@@ -22,7 +23,12 @@ func InitializeServe(c *config.Config) (*api.Server, error) {
 		return nil, err
 	}
 	authRepo := repository.NewauthRepo(gormDB)
-	authServiceServer := service.NewauthUseCase(authRepo)
+	cartServiceClient, err := client.InitCartClient(c)
+	if err != nil {
+		return nil, err
+	}
+	cartClient := client.NewCartClient(cartServiceClient)
+	authServiceServer := service.NewauthUseCase(authRepo, cartClient)
 	server, err := api.NewgrpcServe(c, authServiceServer)
 	if err != nil {
 		return nil, err

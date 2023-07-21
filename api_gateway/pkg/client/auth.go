@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stebinsabu13/ecommerce_microservice/api_gateway/pkg/client/interfaces"
 	"github.com/stebinsabu13/ecommerce_microservice/api_gateway/pkg/pb"
@@ -87,4 +88,31 @@ func (cr *authclient) AdminLogin(ctx context.Context, body utils.BodyLogin) (*pb
 		return res, err
 	}
 	return res, nil
+}
+
+func (c *authclient) ShowAddress(ctx context.Context, id uint) (*pb.ShowUserAddressResponse, error) {
+	address, err := c.Server.ShowUserAddress(ctx, &pb.ShowUserAddressRequest{
+		Userid: uint32(id),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return address, nil
+}
+
+func (c *authclient) AddAddress(ctx context.Context, body utils.AddAddress, id uint) (*pb.AddUserAddressResponse, error) {
+	fmt.Println(id)
+	address, err := c.Server.AddUserAddress(ctx, &pb.AddUserAddressRequest{
+		Userid:    uint32(id),
+		HouseName: body.HouseName,
+		Street:    body.Street,
+		City:      body.City,
+		State:     body.State,
+		Country:   body.Country,
+		Pincode:   body.Pincode,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return address, nil
 }

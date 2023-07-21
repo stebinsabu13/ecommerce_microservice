@@ -8,8 +8,10 @@ import (
 )
 
 type Clients struct {
-	Authcli pb.AuthServiceClient
-	Prodcli pb.ProductServiceClient
+	Authcli  pb.AuthServiceClient
+	Prodcli  pb.ProductServiceClient
+	Cartcli  pb.CartServiceClient
+	Ordercli pb.OrderServiceClient
 }
 
 func InitClient(c *config.Config) (Clients, error) {
@@ -21,10 +23,22 @@ func InitClient(c *config.Config) (Clients, error) {
 	if proderr != nil {
 		return Clients{}, proderr
 	}
+	cartcc, carterr := grpc.Dial(c.CartServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if carterr != nil {
+		return Clients{}, carterr
+	}
+	ordercc, ordererr := grpc.Dial(c.OrderServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if autherr != nil {
+		return Clients{}, ordererr
+	}
+	orderclient := pb.NewOrderServiceClient(ordercc)
+	cartclient := pb.NewCartServiceClient(cartcc)
 	authclient := pb.NewAuthServiceClient(authcc)
 	productclient := pb.NewProductServiceClient(prodcc)
 	return Clients{
-		Authcli: authclient,
-		Prodcli: productclient,
+		Authcli:  authclient,
+		Prodcli:  productclient,
+		Cartcli:  cartclient,
+		Ordercli: orderclient,
 	}, nil
 }
