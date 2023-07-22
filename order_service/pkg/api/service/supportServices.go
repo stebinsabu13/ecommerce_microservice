@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -12,35 +13,48 @@ import (
 	"github.com/stebinsabu13/ecommerce_microservice/order_service/pkg/support"
 )
 
-func (c *orderService) ValidateCoupon(userid uint, couponcode string) (*uint, *pb.CartResponse, error) {
-	fmt.Println("couponcode:", couponcode)
-	var found bool
+func (c *orderService) Checkproductstock(userid uint) (*pb.CartResponse, error) {
 	cart, err := c.CartClient.FindCartById(uint(userid))
-	fmt.Println("validate cart:", cart)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	log.Println("validate cart:", cart)
+	cartitems, err1 := c.CartClient.Findcartitems(uint(cart.Id))
+	if err1 != nil {
+		return nil, err1
+	}
+	for _, v := range cartitems {
+		if err2 := c.ProdClient.CheckStock(uint(v.ProductDetailID), uint(v.Quantity)); err2 != nil {
+			return nil, err2
+		}
+	}
+	return cart, nil
+}
+
+func (c *orderService) ValidateCoupon(couponcode string, cart *pb.CartResponse) (*uint, error) {
+	log.Println("couponcode:", couponcode)
+	var found bool
 	if couponcode != "" {
 		cartitems, err1 := c.CartClient.Findcartitems(uint(cart.Id))
 		if err1 != nil {
-			return nil, nil, err1
+			return nil, err1
 		}
 		coupon, err2 := c.Repo.FindCoupon(couponcode)
 		if err2 != nil {
-			return nil, nil, err2
+			return nil, err2
 		}
 		if coupon.MinimumOrderAmount != nil && *coupon.MinimumOrderAmount > uint(cart.Grandtotal) {
-			return nil, nil, errors.New("requires a minimum amount for the coupon to apply")
+			return nil, errors.New("requires a minimum amount for the coupon to apply")
 		}
 		if time.Now().After(coupon.ExpirationDate) {
-			return nil, nil, errors.New("the coupon had expired")
+			return nil, errors.New("the coupon had expired")
 		}
 		usecount, err3 := c.Repo.CouponUsage(coupon.ID, cart.Userid)
 		if err3 != nil {
-			return nil, nil, err3
+			return nil, err3
 		}
 		if usecount >= coupon.UsageLimit {
-			return nil, nil, errors.New("coupon usage limit exceeds")
+			return nil, errors.New("coupon usage limit exceeds")
 		}
 		if coupon.ProductID != nil {
 			for _, v := range cartitems {
@@ -49,7 +63,7 @@ func (c *orderService) ValidateCoupon(userid uint, couponcode string) (*uint, *p
 				}
 				res, err := c.ProdClient.Prodetail(uint(v.ProductDetailID))
 				if err != nil {
-					return nil, nil, err
+					return nil, err
 				}
 				if *coupon.ProductID == int(res.Productid) {
 					found = true
@@ -63,7 +77,7 @@ func (c *orderService) ValidateCoupon(userid uint, couponcode string) (*uint, *p
 				}
 			}
 			if !found {
-				return nil, nil, errors.New("this coupon can't be aplied for these products")
+				return nil, errors.New("this coupon can't be aplied for these products")
 			}
 		} else {
 			for usecount < coupon.UsageLimit {
@@ -77,16 +91,16 @@ func (c *orderService) ValidateCoupon(userid uint, couponcode string) (*uint, *p
 			}
 		}
 		if err := c.Repo.UpdateCouponUsage(coupon.ID, usecount); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		res, err := c.CartClient.UpdateCart(cart)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		fmt.Println("response after coupon applying, grandtotal=", res.Grandtotal)
-		return &coupon.ID, cart, nil
+		log.Println("response after coupon applying, grandtotal=", res.Grandtotal)
+		return &coupon.ID, nil
 	}
-	return nil, cart, nil
+	return nil, nil
 }
 
 func (c *orderService) ServiceAddtoOrders(addressid uint, paymentid uint, cart *pb.CartResponse, couponid *uint) (*pb.AddOrderResponse, error) {
@@ -94,7 +108,7 @@ func (c *orderService) ServiceAddtoOrders(addressid uint, paymentid uint, cart *
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Find Cartitems:", cartitems)
+	log.Println("Find Cartitems:", cartitems)
 	order := domain.Order{
 		UserID:     uint(cart.Userid),
 		PlacedDate: time.Now(),
@@ -129,23 +143,24 @@ func (c *orderService) ServiceAddtoOrders(addressid uint, paymentid uint, cart *
 	if err2 != nil {
 		panic(err2)
 	}
-	fmt.Println("Total after deleting cart", res.Grandtotal)
+	log.Println("Total after deleting cart", res.Grandtotal)
 	return &pb.AddOrderResponse{
 		Status:   http.StatusOK,
 		Response: "Product added",
 	}, nil
 }
 
-func (c *orderService) DeferredActions(orderid uint) {
+func (c *orderService) DeferredActions(orderid uint) (*pb.AddOrderResponse, error) {
 	err := recover()
 	for err != nil {
-		fmt.Println("inside  defer", err)
+		log.Println("inside  defer", err)
 		err = c.Repo.CleanUp(orderid)
 	}
+	return &pb.AddOrderResponse{}, fmt.Errorf("errror")
 }
 
 func (c *orderService) Razorpayment(cart *pb.CartResponse, couponid *uint) (*pb.AddOrderResponse, error) {
-	fmt.Println("Inside razorpayment in orderservice", cart)
+	log.Println("Inside razorpayment in orderservice", cart)
 	var razorpayOrder *pb.AddOrderResponse
 	// generate razorpay order
 	//razorpay amount is caluculate on pisa for india so make the actual price into paisa

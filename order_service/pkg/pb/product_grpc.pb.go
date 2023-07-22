@@ -23,7 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProductServiceClient interface {
 	OrderProductDetail(ctx context.Context, in *OrderProdDetailRequest, opts ...grpc.CallOption) (*ProductDetailResponse, error)
-	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockResponse, error)
+	UpdateStock(ctx context.Context, in *StockRequest, opts ...grpc.CallOption) (*StockResponse, error)
+	CheckStock(ctx context.Context, in *StockRequest, opts ...grpc.CallOption) (*StockResponse, error)
 }
 
 type productServiceClient struct {
@@ -43,9 +44,18 @@ func (c *productServiceClient) OrderProductDetail(ctx context.Context, in *Order
 	return out, nil
 }
 
-func (c *productServiceClient) UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockResponse, error) {
-	out := new(UpdateStockResponse)
+func (c *productServiceClient) UpdateStock(ctx context.Context, in *StockRequest, opts ...grpc.CallOption) (*StockResponse, error) {
+	out := new(StockResponse)
 	err := c.cc.Invoke(ctx, "/pb.ProductService/UpdateStock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *productServiceClient) CheckStock(ctx context.Context, in *StockRequest, opts ...grpc.CallOption) (*StockResponse, error) {
+	out := new(StockResponse)
+	err := c.cc.Invoke(ctx, "/pb.ProductService/CheckStock", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +67,8 @@ func (c *productServiceClient) UpdateStock(ctx context.Context, in *UpdateStockR
 // for forward compatibility
 type ProductServiceServer interface {
 	OrderProductDetail(context.Context, *OrderProdDetailRequest) (*ProductDetailResponse, error)
-	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockResponse, error)
+	UpdateStock(context.Context, *StockRequest) (*StockResponse, error)
+	CheckStock(context.Context, *StockRequest) (*StockResponse, error)
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -68,8 +79,11 @@ type UnimplementedProductServiceServer struct {
 func (UnimplementedProductServiceServer) OrderProductDetail(context.Context, *OrderProdDetailRequest) (*ProductDetailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderProductDetail not implemented")
 }
-func (UnimplementedProductServiceServer) UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockResponse, error) {
+func (UnimplementedProductServiceServer) UpdateStock(context.Context, *StockRequest) (*StockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
+}
+func (UnimplementedProductServiceServer) CheckStock(context.Context, *StockRequest) (*StockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckStock not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 
@@ -103,7 +117,7 @@ func _ProductService_OrderProductDetail_Handler(srv interface{}, ctx context.Con
 }
 
 func _ProductService_UpdateStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateStockRequest)
+	in := new(StockRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,7 +129,25 @@ func _ProductService_UpdateStock_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/pb.ProductService/UpdateStock",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProductServiceServer).UpdateStock(ctx, req.(*UpdateStockRequest))
+		return srv.(ProductServiceServer).UpdateStock(ctx, req.(*StockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProductService_CheckStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).CheckStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ProductService/CheckStock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).CheckStock(ctx, req.(*StockRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -134,6 +166,10 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateStock",
 			Handler:    _ProductService_UpdateStock_Handler,
+		},
+		{
+			MethodName: "CheckStock",
+			Handler:    _ProductService_CheckStock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

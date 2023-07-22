@@ -39,7 +39,17 @@ func (c *productClient) Prodetail(prodetailid uint) (*pb.ProductDetailResponse, 
 }
 
 func (c *productClient) UpdateStock(prodetailid uint, quantity uint) error {
-	if _, err := c.Server.UpdateStock(context.Background(), &pb.UpdateStockRequest{
+	if _, err := c.Server.UpdateStock(context.Background(), &pb.StockRequest{
+		Prodetailid: uint32(prodetailid),
+		Quantity:    uint32(quantity),
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *productClient) CheckStock(prodetailid uint, quantity uint) error {
+	if _, err := c.Server.CheckStock(context.Background(), &pb.StockRequest{
 		Prodetailid: uint32(prodetailid),
 		Quantity:    uint32(quantity),
 	}); err != nil {

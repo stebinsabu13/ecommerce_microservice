@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 
 	client "github.com/stebinsabu13/ecommerce_microservice/order_service/pkg/client/interfaces"
@@ -30,8 +30,12 @@ func NewOrderService(repo interfaces.OderRepo, cartclient client.CartClient, pro
 }
 
 func (c *orderService) AddtoOrders(ctx context.Context, req *pb.AddOrderRequest) (*pb.AddOrderResponse, error) {
-	fmt.Println("inside service addtoorder:", req)
-	couponid, cart, err := c.ValidateCoupon(uint(req.Userid), req.Couponcode)
+	log.Println("inside service addtoorder:", req)
+	cart, err2 := c.Checkproductstock(uint(req.Userid))
+	if err2 != nil {
+		return &pb.AddOrderResponse{}, err2
+	}
+	couponid, err := c.ValidateCoupon(req.Couponcode, cart)
 	if err != nil {
 		return nil, err
 	}
@@ -56,10 +60,10 @@ func (c *orderService) GetOrders(ctx context.Context, req *pb.ShowOrdersRequest)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("orders:", orders)
+	log.Println("orders:", orders)
 	for i := 0; i < len(orders); i++ {
 		addres, err := c.AuthClient.GetAddress(orders[i].AddressID)
-		fmt.Println("addres:", addres)
+		log.Println("addres:", addres)
 		if err != nil {
 			return nil, err
 		}
@@ -76,9 +80,9 @@ func (c *orderService) GetOrders(ctx context.Context, req *pb.ShowOrdersRequest)
 			Mode:       orders[i].Mode,
 			GrandTotal: uint32(orders[i].GrandTotal),
 		})
-		fmt.Println("inside for loop:", orderresponse)
+		log.Println("inside for loop:", orderresponse)
 	}
-	fmt.Println("outside for loop:", orderresponse)
+	log.Println("outside for loop:", orderresponse)
 	return &pb.ShowOrdersResponse{
 		Status: http.StatusOK,
 		Orders: orderresponse,

@@ -103,6 +103,9 @@ func (c *cartRepo) CartItemsOrder(req *pb.CartItemRequest) ([]*pb.CartItem, erro
 	if err := c.DB.Model(&domain.CartItem{}).Where("cart_id=?", req.Cartid).Select("cart_id,product_detail_id,quantity").Scan(&res).Error; err != nil {
 		return res, err
 	}
+	if len(res) <= 0 {
+		return res, errors.New("no products in the cart, add something to cart")
+	}
 	return res, nil
 }
 

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 
 	"github.com/stebinsabu13/ecommerce_microservice/product_service/pkg/domain"
 	"github.com/stebinsabu13/ecommerce_microservice/product_service/pkg/pb"
@@ -92,7 +92,27 @@ func (c *ProductDatabase) FindProductDetailById(id string) (domain.ProductDetail
 	return productdetail, discount, nil
 }
 
-func (c *ProductDatabase) UpdateStock(req *pb.UpdateStockRequest) error {
+func (c *ProductDatabase) UpdateStock(req *pb.StockRequest) error {
+	var stock uint
+	tx := c.DB.Begin()
+	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).Select("stock").Scan(&stock).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	newstock := stock - uint(req.Quantity)
+	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).UpdateColumn("stock", newstock).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	log.Println("Inside update stock repo:", newstock)
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func (c *ProductDatabase) CheckStock(req *pb.StockRequest) error {
 	var stock uint
 	tx := c.DB.Begin()
 	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).Select("stock").Scan(&stock).Error; err != nil {
@@ -103,12 +123,6 @@ func (c *ProductDatabase) UpdateStock(req *pb.UpdateStockRequest) error {
 		tx.Rollback()
 		return errors.New("can't place orders out of stock product in the cart please remove and come again")
 	}
-	newstock := stock - uint(req.Quantity)
-	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", req.Prodetailid).UpdateColumn("stock", newstock).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	fmt.Println("Inside update stock repo:", newstock)
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return err

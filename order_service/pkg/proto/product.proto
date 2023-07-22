@@ -6,7 +6,8 @@ option go_package = "./pkg/pb";
 
 service ProductService {
     rpc OrderProductDetail (OrderProdDetailRequest) returns (ProductDetailResponse){}
-    rpc UpdateStock (UpdateStockRequest) returns (UpdateStockResponse){}
+    rpc UpdateStock (StockRequest) returns (StockResponse){}
+    rpc CheckStock (StockRequest) returns (StockResponse){}
 }
 
 message OrderProdDetailRequest {
@@ -21,10 +22,10 @@ message ProductDetailResponse {
     uint32 productid=5;
 }
 
-message UpdateStockRequest {
+message StockRequest {
     uint32 prodetailid=1;
     uint32 quantity=2;
 }
-message UpdateStockResponse {
+message StockResponse {
     string Response=1;
 }

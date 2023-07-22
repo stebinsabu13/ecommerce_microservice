@@ -105,12 +105,22 @@ func (cr *productService) ProductDetail(ctx context.Context, req *pb.CartProdDet
 	}, nil
 }
 
-func (cr *productService) UpdateStock(ctx context.Context, req *pb.UpdateStockRequest) (*pb.UpdateStockResponse, error) {
+func (cr *productService) UpdateStock(ctx context.Context, req *pb.StockRequest) (*pb.StockResponse, error) {
 	err := cr.Repo.UpdateStock(req)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.UpdateStockResponse{
+	return &pb.StockResponse{
 		Response: "stock updated",
+	}, nil
+}
+
+func (cr *productService) CheckStock(ctx context.Context, req *pb.StockRequest) (*pb.StockResponse, error) {
+	err := cr.Repo.CheckStock(req)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.StockResponse{
+		Response: "insufficient stock",
 	}, nil
 }
