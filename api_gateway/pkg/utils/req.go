@@ -51,3 +51,7 @@ type AddAddress struct {
 	Country   string `json:"country" binding:"required"`
 	Pincode   string `json:"pincode" binding:"required" `
 }
+
+type Response struct {
+	Response string
+}

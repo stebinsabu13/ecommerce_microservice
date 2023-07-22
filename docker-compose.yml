@@ -1,0 +1,138 @@
+version: '3'
+
+name: microservice_ecommerce_project
+services:
+  db-prod:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME_PROD}
+    networks:
+      - mynet
+    ports:
+      - 5001:5432
+    volumes:
+      - product-db:/var/lib/postgresql/data
+
+  db-cart:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME_CART}
+    networks:
+      - mynet
+    ports:
+      - 5002:5432
+    volumes:
+      - cart-db:/var/lib/postgresql/data
+
+  db-auth:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME_AUTH}
+    networks:
+      - mynet
+    ports:
+      - 5000:5432
+    volumes:
+      - auth-db:/var/lib/postgresql/data
+
+  db-order:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME_ORDER}
+    networks:
+      - mynet
+    ports:
+      - 5003:5432
+    volumes:
+      - order-db:/var/lib/postgresql/data
+
+  product_service:
+    image: ecommerce_microservice/product_service
+    env_file:
+      - ./product_service/.env
+    networks:
+      - mynet
+    ports:
+      - 4003:4003
+    volumes:
+      - ./product_service:/usr/src/app
+    depends_on:
+      - db-prod
+
+  cart_service:
+    image: ecommerce_microservice/cart_service
+    env_file:
+      - ./cart_service/.env
+    networks:
+      - mynet
+    ports:
+      - 4004:4004
+    volumes:
+      - ./cart_service:/usr/src/app
+    depends_on:
+      - db-cart
+      - product_service
+
+  auth_service:
+    image: ecommerce_microservice/auth_service
+    env_file:
+      - ./auth_service/.env
+    networks:
+      - mynet
+    ports:
+      - 4001:4001
+    volumes:
+      - ./auth_service:/usr/src/app
+    depends_on:
+      - db-auth
+      - cart_service
+
+  order_service:
+    image: ecommerce_microservice/order_service
+    env_file:
+      - ./order_service/.env
+    networks:
+      - mynet
+    ports:
+      - 4005:4005
+    volumes:
+      - ./order_service:/usr/src/app
+    depends_on:
+      - db-order
+      - cart_service
+      - product_service
+      - auth_service
+
+  api_gateway:
+    image: ecommerce_microservice/api_gateway
+    env_file:
+      - ./api_gateway/.env
+    networks:
+      - mynet
+    ports:
+      - 4000:4000
+    volumes:
+      - ./api_gateway:/usr/src/app
+    depends_on:
+      - auth_service
+      - product_service
+      - cart_service
+      - order_service
+
+volumes:
+  auth-db:
+  product-db:
+  cart-db:
+  order-db:
+
+networks:
+  mynet:
+    driver: bridge

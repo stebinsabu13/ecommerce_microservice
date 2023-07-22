@@ -18,6 +18,22 @@ func NewOrderHandler(client interfaces.OrderClient) OrderHandler {
 	}
 }
 
+// PLACE A NEW ORDER
+//
+//	@Summary		API FOR PLACING A NEW ORDER
+//	@ID				USER-PROCEED-ORDER
+//	@Description	Users can place a new order with the cart items.
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Param			paymentid	query		string	true	"Enter the payment id"
+//	@Param			addressid	query		string	true	"Enter the address id"
+//	@Param			code		query		string	false	"If you have a coupon,Enter the coupon code"
+//	@Success		200			{object}	utils.Response
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/user/checkout/add [get]
 func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 	code := c.DefaultQuery("code", "")
 	addressid, _ := strconv.Atoi(c.Query("addressid"))
@@ -49,6 +65,18 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 	}
 }
 
+// VIEW ORDERS
+//
+//	@Summary		API FOR VIEWING ORDERS
+//	@Description	Users can view all orders.
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/orders [get]
 func (cr *OrderHandler) ShowOrders(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
@@ -69,6 +97,20 @@ func (cr *OrderHandler) ShowOrders(c *gin.Context) {
 	})
 }
 
+// VIEW ORDERS DETAILS
+//
+//	@Summary		API FOR VIEWING ORDERS DETAILS
+//	@Description	Users can the selected order details.
+//	@Tags			ADMIN USER
+//	@Accept			json
+//	@Produce		json
+//	@Param			orderid	query		uint	true	"Enter the order id"
+//	@Success		200		{object}	utils.Response
+//	@Failure		401		{object}	utils.Response
+//	@Failure		400		{object}	utils.Response
+//	@Failure		500		{object}	utils.Response
+//	@Router			/user/orders/detail [get]
+//	@Router			/admin/order/detail [get]
 func (cr *OrderHandler) ShowOrderDetail(c *gin.Context) {
 	id, err1 := strconv.Atoi(c.Query("orderid"))
 	if err1 != nil {
